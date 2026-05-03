@@ -8,7 +8,7 @@ class Event {
     private String name;
     public ChronoLocalDate date;
     private int totalSeats;
-    public int availableSeats;
+    private int reservedSeats;
 
     public Event(int id, String name, ChronoLocalDate date, int totalSeats) {
         this.id = id;
@@ -17,12 +17,27 @@ class Event {
         this.totalSeats = totalSeats;
     }
 
+    public int getEventId() {
+        return id;
+    }
+    public String getEventName() {
+        return name;
+    }
+    public ChronoLocalDate getDate() {
+        return date;
+    }
+    public  int getTotalSeats() {
+        return totalSeats;
+    }
     public int getAvailableSeats() {
-        return availableSeats;
+        return totalSeats - reservedSeats;
+    }
+    public int getReservedSeats() {
+        return reservedSeats;
     }
 
     public boolean isSoldOut() {
-        if (availableSeats <= 0) {
+        if (getAvailableSeats() <= 0) {
             return true;
         }
         return false;
@@ -32,7 +47,7 @@ class Event {
 
         LocalDate currentDate = LocalDate.now();
 
-        if (currentDate.isAfter(date)) {
+        if (currentDate.isBefore(date)) {
             return true;
         }
 
@@ -40,9 +55,23 @@ class Event {
     }
 
     public boolean hasCapacityFor(int people) {
-        if ((availableSeats - people) >= 0) {
+        if ((getAvailableSeats() - people) >= 0) {
             return true;
         }
         return false;
+    }
+
+    public void reserveSeat() throws EventSoldOutException {
+        if (isSoldOut()) throw new EventSoldOutException("Event is Sold out!");
+        reservedSeats++;
+    }
+    public void releaseSeat() {
+        reservedSeats--;
+    }
+    public void reserveSeats(int people) throws  EventSoldOutException {
+        if (!hasCapacityFor(people)) throw new EventSoldOutException("Amount of seats available: " + getAvailableSeats());
+    }
+    public void releaseSeats(int people) {
+        reservedSeats = reservedSeats - people;
     }
 }
