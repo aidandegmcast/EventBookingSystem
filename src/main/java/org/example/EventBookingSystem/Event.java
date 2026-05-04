@@ -2,12 +2,12 @@ package org.example.EventBookingSystem;
 import java.time.LocalDate;
 import java.time.chrono.ChronoLocalDate;
 
-class Event {
+public class Event {
 
-    private int id;
-    private String name;
+    public int id;
+    public String name;
     public ChronoLocalDate date;
-    private int totalSeats;
+    public int totalSeats;
     private int reservedSeats;
 
     public Event(int id, String name, ChronoLocalDate date, int totalSeats) {
@@ -37,9 +37,8 @@ class Event {
     }
 
     public boolean isSoldOut() {
-        if (getAvailableSeats() <= 0) {
-            return true;
-        }
+        if (getAvailableSeats() <= 0) return true;
+
         return false;
     }
 
@@ -47,17 +46,14 @@ class Event {
 
         LocalDate currentDate = LocalDate.now();
 
-        if (currentDate.isBefore(date)) {
-            return true;
-        }
+        if (currentDate.isBefore(date)) return true;
 
         return false;
     }
 
     public boolean hasCapacityFor(int people) {
-        if ((getAvailableSeats() - people) >= 0) {
-            return true;
-        }
+        if ((getAvailableSeats() - people) >= 0) return true;
+
         return false;
     }
 
