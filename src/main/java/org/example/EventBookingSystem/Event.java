@@ -6,11 +6,11 @@ public class Event {
 
     public int id;
     public String name;
-    public ChronoLocalDate date;
+    public LocalDate date;
     public int totalSeats;
     private int reservedSeats;
 
-    public Event(int id, String name, ChronoLocalDate date, int totalSeats) {
+    public Event(int id, String name, LocalDate date, int totalSeats) {
         this.id = id;
         this.name = name;
         this.date = date;
@@ -23,7 +23,7 @@ public class Event {
     public String getEventName() {
         return name;
     }
-    public ChronoLocalDate getDate() {
+    public LocalDate getDate() {
         return date;
     }
     public  int getTotalSeats() {
@@ -46,7 +46,7 @@ public class Event {
 
         LocalDate currentDate = LocalDate.now();
 
-        if (currentDate.isBefore(date)) return true;
+        if (currentDate.isAfter(date)) return true;
 
         return false;
     }
@@ -57,17 +57,23 @@ public class Event {
         return false;
     }
 
-    public void reserveSeat() throws EventSoldOutException {
+    public void reserveSeat() throws EventSoldOutException, EventIsInPastException {
         if (isSoldOut()) throw new EventSoldOutException("Event is Sold out!");
+        if (isInPast()) throw new EventIsInPastException();
         reservedSeats++;
     }
-    public void releaseSeat() {
+    public void releaseSeat() throws NoSeatsReservedException {
+        if (getAvailableSeats() == totalSeats) throw new NoSeatsReservedException("Seat cannot be released if not reserved!");
         reservedSeats--;
     }
-    public void reserveSeats(int people) throws  EventSoldOutException {
+    public void reserveSeats(int people) throws EventSoldOutException, EventIsInPastException {
         if (!hasCapacityFor(people)) throw new EventSoldOutException("Amount of seats available: " + getAvailableSeats());
+        if (isInPast()) throw new EventIsInPastException();
+        reservedSeats = reservedSeats + people;
     }
-    public void releaseSeats(int people) {
+    public void releaseSeats(int people) throws NoSeatsReservedException {
+        if (getAvailableSeats() == totalSeats) throw new NoSeatsReservedException("Seat cannot be released if not reserved!");
+        if (people > getReservedSeats()) throw new NoSeatsReservedException("Cannot release more seats than: " + getReservedSeats());
         reservedSeats = reservedSeats - people;
     }
 }
