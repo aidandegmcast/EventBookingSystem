@@ -2,17 +2,17 @@ package org.example.EventBookingSystem;
 
 public class User {
 
-    private int id;
+    private String id;
     private String name;
     private String email;
 
-    public User(int id, String name, String email) {
+    public User(String id, String name, String email) {
         setUserId(id);
         setUserName(name);
         setUserEmail(email);
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return id;
     }
     public String getUserName() {
@@ -22,7 +22,7 @@ public class User {
         return email;
     }
 
-    public void setUserId(int id) {
+    public void setUserId(String id) {
         this.id = id;
     }
     public void setUserName(String name) {

@@ -1,23 +1,26 @@
 package org.example.EventBookingSystem;
+import org.example.EventBookingSystem.Exceptions.EventIsInPastException;
+import org.example.EventBookingSystem.Exceptions.EventSoldOutException;
+import org.example.EventBookingSystem.Exceptions.NoSeatsReservedException;
+
 import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDate;
 
 public class Event {
 
-    public int id;
+    public String id;
     public String name;
     public LocalDate date;
     public int totalSeats;
     private int reservedSeats;
 
-    public Event(int id, String name, LocalDate date, int totalSeats) {
+    public Event(String id, String name, LocalDate date, int totalSeats) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.totalSeats = totalSeats;
     }
 
-    public int getEventId() {
+    public String getEventId() {
         return id;
     }
     public String getEventName() {

@@ -1,13 +1,17 @@
 package org.example.EventBookingSystem;
 
+import org.example.EventBookingSystem.Exceptions.ReservationAlreadyCancelledException;
+import org.example.EventBookingSystem.Exceptions.ReservationAssignedToNullException;
+import org.example.EventBookingSystem.Exceptions.TransferException;
+
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.util.UUID;
 
 public class Reservation {
 
     public enum STATUS {ACTIVE, CANCELLED};
 
-    public int id;
+    public String id;
     public Event event;
     public User user;
     public STATUS status;
@@ -15,16 +19,15 @@ public class Reservation {
 
     public Reservation(Event event, User user) throws ReservationAssignedToNullException {
         if (event == null) throw new ReservationAssignedToNullException();
-        Random random = new Random();
 
-        this.id = random.nextInt(100); //limit to 99 to make it easier to test
+        this.id = UUID.randomUUID().toString();
         this.event = event;
         this.user = user;
         this.status = STATUS.ACTIVE;
         this.createdAt = LocalDateTime.now();
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
