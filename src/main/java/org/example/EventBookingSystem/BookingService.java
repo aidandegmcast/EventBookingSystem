@@ -34,18 +34,24 @@ public class BookingService {
         return user;
     }
 
-    public Reservation reserveTicket(String userId, String eventId) throws EventIsInPastException, EventSoldOutException, ReservationAssignedToNullException {
+    public Reservation getReservation(String reservationId) {
+        Reservation reservation = reservations.get(reservationId);
+        if (reservation == null) throw new ReservationNotFoundException();
+        return reservation;
+    }
+
+    public String reserveTicket(String userId, String eventId) throws EventIsInPastException, EventSoldOutException, ReservationAssignedToNullException {
         User user = getUser(userId);
         Event event = getEvent(eventId);
-//
-//        if (event.isInPast()) throw new EventIsInPastException();
-//
-//        event.reserveSeat();
-//
+
+        if (event.isInPast()) throw new EventIsInPastException();
+
+        event.reserveSeat();
+
         Reservation reservation = new Reservation(event, user);
-//        reservations.put(reservation.getId(), reservation);
-//
-        return reservation;
+        reservations.put(reservation.getId(), reservation);
+
+        return reservation.getId();
     }
 
     public void cancelReservation(String reservationId) throws ReservationAlreadyCancelledException, NoSeatsReservedException {
@@ -59,6 +65,7 @@ public class BookingService {
     public Reservation transferReservation(String reservationId, String newUserId) throws TransferException, ReservationAlreadyCancelledException {
         Reservation reservation = reservations.get(reservationId);
         if (reservation == null) throw new ReservationNotFoundException();
+        if (newUserId == reservations.get(reservationId).toString()) throw new TransferException("Cannot transfer to the current user.");
 
         reservation.transferTo(getUser(newUserId));
         return reservation;

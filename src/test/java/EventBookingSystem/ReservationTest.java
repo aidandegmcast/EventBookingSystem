@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,13 +24,20 @@ public class ReservationTest {
     @Nested
     class WithoutSetup {
 
+        @BeforeEach
+        void setup() throws IllegalAccessException, NoSuchFieldException {
+            Field field = Reservation.class.getDeclaredField("nextId");
+            field.setAccessible(true);
+            field.set(null, 1);
+        }
+
         @Test
         void creatingAReservationWithoutAnEventDoesNotWork() throws ReservationAssignedToNullException {
             assertThrows(ReservationAssignedToNullException.class,()->reservation = new Reservation(event, user));
         }
 
         @Test
-        void transferringToTheSameUser() throws ReservationAssignedToNullException {
+        void transferringToNullUser() throws ReservationAssignedToNullException {
             event = new Event("1", "Glitch", LocalDate.parse("2026-08-14"), 10);
             user = new User("1", "Aidan", "aidan@mail.com");
             reservation = new Reservation(event, user);
@@ -43,7 +51,11 @@ public class ReservationTest {
     class WithSetup {
 
         @BeforeEach
-        void setup() {
+        void setup() throws IllegalAccessException, NoSuchFieldException {
+            Field field = Reservation.class.getDeclaredField("nextId");
+            field.setAccessible(true);
+            field.set(null, 1);
+
             user = new User("1", "Aidan", "aidan@mail.com");
             event = new Event("1", "Glitch", LocalDate.parse("2026-08-14"), 10);
         }
@@ -57,7 +69,7 @@ public class ReservationTest {
         @Test
         void gettingReservationIdFromReservation() throws ReservationAssignedToNullException {
             reservation = new Reservation(event, user);
-            assertEquals(1, reservation.getId());
+            assertEquals("1", reservation.getId());
         }
 
         @Test

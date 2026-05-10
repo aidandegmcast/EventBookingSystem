@@ -11,6 +11,8 @@ public class Reservation {
 
     public enum STATUS {ACTIVE, CANCELLED};
 
+    private static int nextId = 1;
+
     public String id;
     public Event event;
     public User user;
@@ -20,7 +22,7 @@ public class Reservation {
     public Reservation(Event event, User user) throws ReservationAssignedToNullException {
         if (event == null) throw new ReservationAssignedToNullException();
 
-        this.id = UUID.randomUUID().toString();
+        this.id = String.valueOf(nextId++);
         this.event = event;
         this.user = user;
         this.status = STATUS.ACTIVE;

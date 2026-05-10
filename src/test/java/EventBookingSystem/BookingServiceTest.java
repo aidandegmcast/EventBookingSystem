@@ -4,16 +4,18 @@ import org.example.EventBookingSystem.BookingService;
 
 import org.example.EventBookingSystem.Event;
 import org.example.EventBookingSystem.Exceptions.*;
+import org.example.EventBookingSystem.Reservation;
 import org.example.EventBookingSystem.User;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.time.format.ResolverStyle;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BookingServiceTest {
 
@@ -39,8 +41,10 @@ public class BookingServiceTest {
     User user11 = new User("11", "david", "david@mail.com");
 
     @BeforeEach
-    void setup() {
-
+    void setup() throws IllegalAccessException, NoSuchFieldException {
+        Field field = Reservation.class.getDeclaredField("nextId");
+        field.setAccessible(true);
+        field.set(null, 1);
     }
 
     @Test
@@ -102,7 +106,11 @@ public class BookingServiceTest {
     class WithSetup {
 
         @BeforeEach
-        void setup() {
+        void setup() throws ReservationAssignedToNullException, NoSuchFieldException, IllegalAccessException {
+            Field field = Reservation.class.getDeclaredField("nextId");
+            field.setAccessible(true);
+            field.set(null, 1);
+
             bookingService.addEvent(event1);
             bookingService.addEvent(event2);
             bookingService.addEvent(event3);
@@ -121,8 +129,7 @@ public class BookingServiceTest {
 
         @Test
         void reservingATicket() throws ReservationAssignedToNullException, EventIsInPastException, EventSoldOutException {
-            bookingService.reserveTicket("1","2");
-            assertEquals(1, event2.getReservedSeats());
+            assertEquals("1", bookingService.reserveTicket("1","2"));
         }
 
         @Test
@@ -163,6 +170,80 @@ public class BookingServiceTest {
         @Test
         void reservingATicketForAPastEvent() {
             assertThrows(EventIsInPastException.class, ()-> bookingService.reserveTicket(user1.getUserId(), event1.getEventId()));
+        }
+
+        @Test
+        void cancelingATicket() throws ReservationAssignedToNullException, EventIsInPastException, EventSoldOutException, NoSeatsReservedException, ReservationAlreadyCancelledException {
+            //reserving a ticket
+            assertEquals("1", bookingService.reserveTicket(user1.getUserId(), event2.getEventId()));
+            assertEquals(1, event2.getReservedSeats());
+            assertEquals(9, event2.getAvailableSeats());
+
+            //cancelling the ticket
+            bookingService.cancelReservation("1");
+            assertEquals(0, event2.getReservedSeats());
+            assertEquals(10, event2.getAvailableSeats());
+
+            //checking the status of the ticket
+            Reservation reservation = bookingService.getReservation("1");
+            assertEquals(Reservation.STATUS.CANCELLED, reservation.getStatus());
+        }
+
+        @Test
+        void cancelingAnUnknownTicket() throws ReservationAssignedToNullException, EventIsInPastException, EventSoldOutException, NoSeatsReservedException, ReservationAlreadyCancelledException {
+            assertEquals("1", bookingService.reserveTicket(user1.getUserId(), event2.getEventId()));
+            assertEquals(1, event2.getReservedSeats());
+
+            assertThrows(ReservationNotFoundException.class, ()-> bookingService.cancelReservation("100"));
+        }
+
+        @Test
+        void cancelingACancelledTicket() throws NoSeatsReservedException, ReservationAlreadyCancelledException, ReservationAssignedToNullException, EventIsInPastException, EventSoldOutException {
+            assertEquals("1", bookingService.reserveTicket(user1.getUserId(), event2.getEventId()));
+            assertEquals(1, event2.getReservedSeats());
+
+            bookingService.cancelReservation("1");
+            assertEquals(0, event2.getReservedSeats());
+
+            assertThrows(ReservationAlreadyCancelledException.class, ()-> bookingService.cancelReservation("1"));
+        }
+
+        @Test
+        void transferringAReservation() throws ReservationAssignedToNullException, EventIsInPastException, EventSoldOutException, TransferException, ReservationAlreadyCancelledException {
+            assertEquals("1", bookingService.reserveTicket(user1.getUserId(), event2.getEventId()));
+            assertEquals(1, event2.getReservedSeats());
+
+            bookingService.transferReservation("1", user4.getUserId());
+
+            //if the above worked then reserving another ticket on the initial user should not throw an Exception.
+            assertEquals("2", bookingService.reserveTicket(user1.getUserId(), event2.getEventId()));
+        }
+
+        @Test
+        void transferringACancelledReservation() throws NoSeatsReservedException, ReservationAlreadyCancelledException, ReservationAssignedToNullException, EventIsInPastException, EventSoldOutException {
+            bookingService.reserveTicket(user1.getUserId(), event2.getEventId());
+            assertEquals(1, event2.getReservedSeats());
+
+            bookingService.cancelReservation("1");
+            assertEquals(0, event2.getReservedSeats());
+
+            assertThrows(ReservationAlreadyCancelledException.class, ()-> bookingService.transferReservation("1", user4.getUserId()));
+        }
+
+        @Test
+        void transferringANullReservation() {
+            assertThrows(ReservationNotFoundException.class, ()-> bookingService.transferReservation(null, user4.getUserId()));
+        }
+
+        @Test
+        void transferringAnUnknownReservation() {
+            assertThrows(ReservationNotFoundException.class, ()-> bookingService.transferReservation("100", user4.getUserId()), "This covers unknown and reservations that do not exist");
+        }
+
+        @Test
+        void transferringAReservationToTheSameUser() throws ReservationAssignedToNullException, EventIsInPastException, EventSoldOutException {
+            bookingService.reserveTicket("1","2");
+            assertThrows(TransferException.class, ()-> bookingService.transferReservation("1","1"));
         }
     }
 }
