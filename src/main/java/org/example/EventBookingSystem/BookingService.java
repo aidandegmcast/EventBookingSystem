@@ -65,7 +65,7 @@ public class BookingService {
     public Reservation transferReservation(String reservationId, String newUserId) throws TransferException, ReservationAlreadyCancelledException {
         Reservation reservation = reservations.get(reservationId);
         if (reservation == null) throw new ReservationNotFoundException();
-        if (newUserId == reservations.get(reservationId).toString()) throw new TransferException("Cannot transfer to the current user.");
+        if (newUserId.equals(reservations.get(reservationId).toString())) throw new TransferException("Cannot transfer to the current user.");
 
         reservation.transferTo(getUser(newUserId));
         return reservation;

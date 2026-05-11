@@ -58,7 +58,7 @@ public class Reservation {
     public void transferTo(User newUser) throws ReservationAlreadyCancelledException, TransferException {
         if (!isActive()) throw new ReservationAlreadyCancelledException();
         if (newUser == null) throw new TransferException("Transferring to a NULL user is not possible!");
-        if (newUser == user) throw new TransferException("Transferring to the same user is not possible!");
+        if (newUser.equals(user)) throw new TransferException("Transferring to the same user is not possible!");
         user = newUser;
     }
 
